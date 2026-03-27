@@ -19,7 +19,9 @@ import (
 	"github.com/occult/pagode/pkg/redirect"
 	"github.com/occult/pagode/pkg/routenames"
 	"github.com/occult/pagode/pkg/services"
+	// [feature:mail] start
 	"github.com/occult/pagode/pkg/ui"
+	// [feature:mail] end
 
 	inertia "github.com/romsar/gonertia/v2"
 )
