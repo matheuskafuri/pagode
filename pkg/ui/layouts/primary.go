@@ -177,7 +177,9 @@ func sidebarMenu(r *ui.Request) Node {
 			Class("menu-list"),
 			MenuLink(r, "Dashboard", routenames.Home),
 			MenuLink(r, "About", routenames.About),
+			// [feature:mail] start
 			MenuLink(r, "Contact", routenames.Contact),
+			// [feature:mail] end
 			MenuLink(r, "Cache", routenames.Cache),
 			MenuLink(r, "Task", routenames.Task),
 			MenuLink(r, "Files", routenames.Files),
