@@ -52,7 +52,7 @@ chat-clear: ## Clear all chat messages, rooms, bans, and uploaded files
 
 .PHONY: setup
 setup: ## Run the interactive setup tool to remove unused features
-	go run cmd/setup/main.go
+	go run ./cmd/setup
 
 .PHONY: docker-build
 docker-build: ## Build the application
