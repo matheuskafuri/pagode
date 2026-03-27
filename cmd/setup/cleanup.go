@@ -27,6 +27,7 @@ func (c *Cleanup) CleanStaleEntFiles() error {
 	// Preserved files in ent/ root.
 	preserved := map[string]bool{
 		"schema":      true, // directory
+		"admin":       true, // custom entc extension used by entc.go
 		"generate.go": true,
 		"entc.go":     true,
 	}
