@@ -107,7 +107,10 @@ func (r *Remover) findFilesWithMarker(featureName string) ([]string, error) {
 		// Skip directories we don't care about.
 		if info.IsDir() {
 			base := info.Name()
-			if base == "node_modules" || base == ".git" || base == "vendor" || base == "cmd" {
+			if base == "node_modules" || base == ".git" || base == "vendor" {
+				return filepath.SkipDir
+			}
+			if base == "setup" && filepath.Dir(path) == filepath.Join(r.root, "cmd") {
 				return filepath.SkipDir
 			}
 			return nil
