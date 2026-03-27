@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -107,6 +108,48 @@ func TestPrepareEntForRegenerationRemovesGeneratedAdminFiles(t *testing.T) {
 	assertExists(t, filepath.Join(root, "ent", "admin", "templates", "handler.tmpl"))
 	assertNotExists(t, filepath.Join(root, "ent", "admin", "handler.go"))
 	assertNotExists(t, filepath.Join(root, "ent", "admin", "types.go"))
+}
+
+func TestVerifyFrontendBuildRunsTypecheckThenViteBuild(t *testing.T) {
+	root := t.TempDir()
+	mustWriteFile(t, filepath.Join(root, "node_modules", ".gitkeep"), "")
+
+	var calls []struct {
+		dir  string
+		name string
+		args []string
+	}
+
+	cleanup := NewCleanup(root, false)
+	cleanup.runCommand = func(dir, name string, args ...string) error {
+		calls = append(calls, struct {
+			dir  string
+			name string
+			args []string
+		}{
+			dir:  dir,
+			name: name,
+			args: append([]string(nil), args...),
+		})
+		return nil
+	}
+
+	if err := cleanup.VerifyFrontendBuild(); err != nil {
+		t.Fatalf("VerifyFrontendBuild() error = %v", err)
+	}
+
+	want := []struct {
+		dir  string
+		name string
+		args []string
+	}{
+		{dir: root, name: "npx", args: []string{"tsc", "--noEmit"}},
+		{dir: root, name: "npx", args: []string{"vite", "build"}},
+	}
+
+	if !reflect.DeepEqual(calls, want) {
+		t.Fatalf("VerifyFrontendBuild() calls = %#v, want %#v", calls, want)
+	}
 }
 
 func mustWriteFile(t *testing.T, path, contents string) {

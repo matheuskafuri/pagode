@@ -10,8 +10,9 @@ import (
 
 // Cleanup handles post-removal steps: ent regen, go mod tidy, build verification, and self-removal.
 type Cleanup struct {
-	root    string
-	verbose bool
+	root       string
+	verbose    bool
+	runCommand func(dir, name string, args ...string) error
 }
 
 // NewCleanup creates a Cleanup rooted at the given project directory.
@@ -134,16 +135,20 @@ func (c *Cleanup) VerifyGoBuild() error {
 	return c.runCmd("go", "build", "-o", "/dev/null", "./cmd/web")
 }
 
-// VerifyFrontendBuild runs `npx tsc --noEmit` as a hard gate.
+// VerifyFrontendBuild runs the frontend hard gates and generates the Vite
+// manifest that the Go app requires when no dev server is running.
 // Always warns visibly when skipping due to missing node_modules.
 func (c *Cleanup) VerifyFrontendBuild() error {
 	nodeModules := filepath.Join(c.root, "node_modules")
 	if _, err := os.Stat(nodeModules); os.IsNotExist(err) {
 		fmt.Println("  ⚠ skipped (node_modules not found)")
-		fmt.Println("    Run `npm install && npx tsc --noEmit` to verify frontend build manually.")
+		fmt.Println("    Run `npm install && npx tsc --noEmit && npx vite build` to verify and generate assets manually.")
 		return nil
 	}
-	return c.runCmd("npx", "tsc", "--noEmit")
+	if err := c.runCmd("npx", "tsc", "--noEmit"); err != nil {
+		return err
+	}
+	return c.runCmd("npx", "vite", "build")
 }
 
 // SelfCleanup removes the setup tool itself and cleans up.
@@ -217,6 +222,10 @@ func (c *Cleanup) runCmd(name string, args ...string) error {
 }
 
 func (c *Cleanup) runCmdInDir(dir, name string, args ...string) error {
+	if c.runCommand != nil {
+		return c.runCommand(dir, name, args...)
+	}
+
 	cmd := exec.Command(name, args...)
 	cmd.Dir = dir
 	cmd.Stdout = os.Stdout

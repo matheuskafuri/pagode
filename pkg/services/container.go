@@ -400,7 +400,12 @@ func (c *Container) getInertia() *inertia.Inertia {
 		if _, err := os.Stat(viteManifestPath); err == nil {
 			actualManifestPath = viteManifestPath
 		} else {
-			panic(fmt.Errorf("inertia build manifest file not found at %s or %s", manifestPath, viteManifestPath))
+			panic(fmt.Errorf(
+				"inertia build manifest file not found at %s or %s; run `npm run dev` or `npm run build` from %s",
+				manifestPath,
+				viteManifestPath,
+				rootDir,
+			))
 		}
 	}
 

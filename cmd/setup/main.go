@@ -163,7 +163,7 @@ func main() {
 	fmt.Printf("[%d/%d] Verifying frontend build...\n", step, totalSteps)
 	if err := cleanup.VerifyFrontendBuild(); err != nil {
 		fmt.Println("\n❌ Frontend build failed! The setup tool has NOT been cleaned up.")
-		fmt.Println("   Please fix the TypeScript errors and run setup again, or use `git checkout .` to recover.")
+		fmt.Println("   Please fix the frontend build errors and run setup again, or use `git checkout .` to recover.")
 		os.Exit(1)
 	}
 	fmt.Println("         done")
