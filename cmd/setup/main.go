@@ -120,22 +120,22 @@ func main() {
 	}
 	fmt.Printf("         done (%d files patched)\n", patchCount)
 
-	// Step 3: Clean stale Ent generated files.
-	step++
-	fmt.Printf("[%d/%d] Cleaning stale Ent files...\n", step, totalSteps)
-	if hasEntSchemas {
-		if err := cleanup.CleanStaleEntFiles(); err != nil {
-			fatal("Error cleaning Ent files: %v", err)
-		}
-	}
-	fmt.Println("         done")
-
-	// Step 4: Regenerate Ent ORM.
+	// Step 3: Regenerate Ent ORM.
 	step++
 	fmt.Printf("[%d/%d] Regenerating Ent ORM...\n", step, totalSteps)
 	if hasEntSchemas {
 		if err := cleanup.RegenerateEnt(); err != nil {
 			fatal("Error regenerating Ent: %v", err)
+		}
+	}
+	fmt.Println("         done")
+
+	// Step 4: Clean stale Ent generated files.
+	step++
+	fmt.Printf("[%d/%d] Cleaning stale Ent files...\n", step, totalSteps)
+	if hasEntSchemas {
+		if err := cleanup.CleanStaleEntFiles(); err != nil {
+			fatal("Error cleaning Ent files: %v", err)
 		}
 	}
 	fmt.Println("         done")
