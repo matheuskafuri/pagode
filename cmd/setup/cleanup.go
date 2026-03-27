@@ -91,12 +91,13 @@ func (c *Cleanup) CleanStaleEntFiles() error {
 	return nil
 }
 
-// RegenerateEnt runs `go generate ./ent` to rebuild ORM code from remaining schemas.
+// RegenerateEnt runs the Ent code generator directly from ent/ to rebuild ORM
+// code from remaining schemas.
 func (c *Cleanup) RegenerateEnt() error {
 	if err := c.prepareEntForRegeneration(); err != nil {
 		return err
 	}
-	return c.runCmd("go", "generate", "./ent")
+	return c.runCmdInDir(filepath.Join(c.root, "ent"), "go", "run", "-mod=mod", "entc.go")
 }
 
 func (c *Cleanup) prepareEntForRegeneration() error {
@@ -212,13 +213,22 @@ func (c *Cleanup) removeMakeSetupTarget() {
 
 // runCmd executes a command in the project root and returns any error.
 func (c *Cleanup) runCmd(name string, args ...string) error {
+	return c.runCmdInDir(c.root, name, args...)
+}
+
+func (c *Cleanup) runCmdInDir(dir, name string, args ...string) error {
 	cmd := exec.Command(name, args...)
-	cmd.Dir = c.root
+	cmd.Dir = dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if c.verbose {
-		fmt.Printf("  running: %s %s\n", name, strings.Join(args, " "))
+		relDir, err := filepath.Rel(c.root, dir)
+		if err == nil && relDir != "." {
+			fmt.Printf("  running in %s: %s %s\n", relDir, name, strings.Join(args, " "))
+		} else {
+			fmt.Printf("  running: %s %s\n", name, strings.Join(args, " "))
+		}
 	}
 
 	if err := cmd.Run(); err != nil {
