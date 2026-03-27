@@ -76,13 +76,12 @@ func (c *Cleanup) VerifyGoBuild() error {
 }
 
 // VerifyFrontendBuild runs `npx tsc --noEmit` as a hard gate.
-// Skips if node_modules is not installed.
+// Always warns visibly when skipping due to missing node_modules.
 func (c *Cleanup) VerifyFrontendBuild() error {
 	nodeModules := filepath.Join(c.root, "node_modules")
 	if _, err := os.Stat(nodeModules); os.IsNotExist(err) {
-		if c.verbose {
-			fmt.Println("  skipped (node_modules not found — run npm install first)")
-		}
+		fmt.Println("  ⚠ skipped (node_modules not found)")
+		fmt.Println("    Run `npm install && npx tsc --noEmit` to verify frontend build manually.")
 		return nil
 	}
 	return c.runCmd("npx", "tsc", "--noEmit")

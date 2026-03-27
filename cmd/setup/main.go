@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -178,23 +179,14 @@ func main() {
 	fmt.Println("\n✅ Setup complete! Run `make run` to start your project.")
 }
 
-// featureNamesFromModules extracts the short feature name used in markers
-// from the module Name field.
+// featureNamesFromModules extracts the short feature names used in markers.
 func featureNamesFromModules(modules []Module) []string {
-	nameMap := map[string]string{
-		"Payment (Stripe)": "payment",
-		"Chat (WebSocket)":  "chat",
-		"Mail (Resend)":     "mail",
-		"Background Tasks":  "tasks",
-		"File Upload":       "files",
-	}
-
 	var names []string
 	seen := make(map[string]bool)
 	for _, m := range modules {
-		if n, ok := nameMap[m.Name]; ok && !seen[n] {
-			names = append(names, n)
-			seen[n] = true
+		if m.FeatureName != "" && !seen[m.FeatureName] {
+			names = append(names, m.FeatureName)
+			seen[m.FeatureName] = true
 		}
 	}
 	return names
@@ -208,10 +200,10 @@ func projectRoot() (string, error) {
 	}
 
 	for {
-		if _, err := os.Stat(dir + "/go.mod"); err == nil {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
 			return dir, nil
 		}
-		parent := dir[:strings.LastIndex(dir, "/")]
+		parent := filepath.Dir(dir)
 		if parent == dir {
 			return "", fmt.Errorf("go.mod not found")
 		}
@@ -220,6 +212,8 @@ func projectRoot() (string, error) {
 }
 
 // isGitClean checks if the git working tree is clean.
+// Only untracked (??) files in cmd/setup/ are exempted since they are part of
+// the setup tool itself and expected to be uncommitted at first run.
 func isGitClean(root string) bool {
 	cmd := exec.Command("git", "status", "--porcelain")
 	cmd.Dir = root
@@ -227,15 +221,13 @@ func isGitClean(root string) bool {
 	if err != nil {
 		return false
 	}
-	// Filter out untracked files in cmd/setup/ and docs/plans/ (expected).
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	for _, line := range lines {
-		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
-		// Allow untracked setup tool files and plan docs.
-		if strings.Contains(line, "cmd/setup/") || strings.Contains(line, "docs/plans/") {
+		// Allow only untracked files in cmd/setup/ (the setup tool itself).
+		if strings.HasPrefix(line, "?? ") && strings.Contains(line, "cmd/setup/") {
 			continue
 		}
 		return false
