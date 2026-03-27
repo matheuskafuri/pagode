@@ -27,7 +27,9 @@ import (
 	// [feature:chat] start
 	"github.com/occult/pagode/pkg/chat"
 	// [feature:chat] end
+	// [feature:tasks] start
 	"github.com/occult/pagode/pkg/log"
+	// [feature:tasks] end
 	inertia "github.com/romsar/gonertia/v2"
 	// [feature:files] start
 	"github.com/spf13/afero"

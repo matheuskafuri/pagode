@@ -155,6 +155,7 @@ func sidebarMenu(r *ui.Request) Node {
 			),
 			Ul(
 				Class("menu-list"),
+				// [feature:tasks] start
 				Li(
 					A(
 						Href(r.Path(routenames.AdminTasks)),
@@ -162,6 +163,7 @@ func sidebarMenu(r *ui.Request) Node {
 						Target("_blank"),
 					),
 				),
+				// [feature:tasks] end
 			),
 		}
 	}
@@ -181,7 +183,9 @@ func sidebarMenu(r *ui.Request) Node {
 			MenuLink(r, "Contact", routenames.Contact),
 			// [feature:mail] end
 			MenuLink(r, "Cache", routenames.Cache),
+			// [feature:tasks] start
 			MenuLink(r, "Task", routenames.Task),
+			// [feature:tasks] end
 			MenuLink(r, "Files", routenames.Files),
 		),
 		P(
