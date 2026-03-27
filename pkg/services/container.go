@@ -19,13 +19,19 @@ import (
 	"entgo.io/ent/entc/gen"
 	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
+	// [feature:tasks] start
 	"github.com/mikestefanello/backlite"
+	// [feature:tasks] end
 	"github.com/occult/pagode/config"
 	"github.com/occult/pagode/ent"
+	// [feature:chat] start
 	"github.com/occult/pagode/pkg/chat"
+	// [feature:chat] end
 	"github.com/occult/pagode/pkg/log"
 	inertia "github.com/romsar/gonertia/v2"
+	// [feature:files] start
 	"github.com/spf13/afero"
+	// [feature:files] end
 
 	// Required by ent.
 	_ "github.com/occult/pagode/ent/runtime"
@@ -49,8 +55,10 @@ type Container struct {
 	// Database stores the connection to the database.
 	Database *sql.DB
 
+	// [feature:files] start
 	// Files stores the file system.
 	Files afero.Fs
+	// [feature:files] end
 
 	// ORM stores a client to the ORM.
 	ORM *ent.Client
@@ -58,26 +66,36 @@ type Container struct {
 	// Graph is the entity graph defined by your Ent schema.
 	Graph *gen.Graph
 
+	// [feature:mail] start
 	// Mail stores an email sending client.
 	Mail *MailClient
+	// [feature:mail] end
 
 	// Auth stores an authentication client.
 	Auth *AuthClient
 
+	// [feature:tasks] start
 	// Tasks stores the task client.
 	Tasks *backlite.Client
+	// [feature:tasks] end
 
+	// [feature:payment] start
 	// Payment stores the payment client.
 	Payment *PaymentClient
+	// [feature:payment] end
 
+	// [feature:chat] start
 	// Chat stores the chat room manager.
 	Chat *chat.RoomManager
+	// [feature:chat] end
 
 	// Inertia for React
 	Inertia *inertia.Inertia
 
+	// [feature:chat] start
 	// WebSocketGroup is a route group for WebSocket connections (no CSRF, gzip, timeout).
 	WebSocketGroup *echo.Group
+	// [feature:chat] end
 }
 
 // NewContainer creates and initializes a new Container.
@@ -88,13 +106,23 @@ func NewContainer() *Container {
 	c.initWeb()
 	c.initCache()
 	c.initDatabase()
+	// [feature:files] start
 	c.initFiles()
+	// [feature:files] end
 	c.initORM()
 	c.initAuth()
+	// [feature:mail] start
 	c.initMail()
+	// [feature:mail] end
+	// [feature:tasks] start
 	c.initTasks()
+	// [feature:tasks] end
+	// [feature:payment] start
 	c.initPayment()
+	// [feature:payment] end
+	// [feature:chat] start
 	c.initChat()
+	// [feature:chat] end
 	c.initInertia()
 	return c
 }
@@ -108,15 +136,19 @@ func (c *Container) Shutdown() error {
 		return err
 	}
 
+	// [feature:tasks] start
 	// Shutdown the task runner.
 	taskCtx, taskCancel := context.WithTimeout(context.Background(), c.Config.Tasks.ShutdownTimeout)
 	defer taskCancel()
 	c.Tasks.Stop(taskCtx)
+	// [feature:tasks] end
 
+	// [feature:chat] start
 	// Shutdown the chat manager.
 	if c.Chat != nil {
 		c.Chat.Shutdown()
 	}
+	// [feature:chat] end
 
 	// Shutdown the ORM.
 	if err := c.ORM.Close(); err != nil {
@@ -192,6 +224,7 @@ func (c *Container) initDatabase() {
 	}
 }
 
+// [feature:files] start
 // initFiles initializes the file system.
 func (c *Container) initFiles() {
 	// Use in-memory storage for tests.
@@ -206,6 +239,8 @@ func (c *Container) initFiles() {
 	}
 	c.Files = afero.NewBasePathFs(fs, c.Config.Files.Directory)
 }
+
+// [feature:files] end
 
 // initORM initializes the ORM.
 func (c *Container) initORM() {
@@ -233,6 +268,7 @@ func (c *Container) initAuth() {
 	c.Auth = NewAuthClient(c.Config, c.ORM)
 }
 
+// [feature:mail] start
 // initMail initialize the mail client.
 func (c *Container) initMail() {
 	var err error
@@ -242,6 +278,9 @@ func (c *Container) initMail() {
 	}
 }
 
+// [feature:mail] end
+
+// [feature:tasks] start
 // initTasks initializes the task client.
 func (c *Container) initTasks() {
 	var err error
@@ -263,6 +302,9 @@ func (c *Container) initTasks() {
 	}
 }
 
+// [feature:tasks] end
+
+// [feature:chat] start
 // initChat initializes the chat room manager.
 func (c *Container) initChat() {
 	if !c.Config.Chat.Enabled {
@@ -275,6 +317,9 @@ func (c *Container) initChat() {
 	}
 }
 
+// [feature:chat] end
+
+// [feature:payment] start
 // initPayment initializes the payment client.
 func (c *Container) initPayment() {
 	var provider PaymentProvider
@@ -288,6 +333,8 @@ func (c *Container) initPayment() {
 
 	c.Payment = NewPaymentClient(c.Config, c.ORM, provider)
 }
+
+// [feature:payment] end
 
 func ProjectRoot() string {
 	currentDir, err := os.Getwd()
