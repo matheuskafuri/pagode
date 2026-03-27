@@ -38,6 +38,12 @@ This means `setup` is meant to be run early in a project, usually once.
 From the repository root:
 
 ```bash
+make setup
+```
+
+This is a convenience wrapper for:
+
+```bash
 go run ./cmd/setup/
 ```
 
