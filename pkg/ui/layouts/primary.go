@@ -186,7 +186,9 @@ func sidebarMenu(r *ui.Request) Node {
 			// [feature:tasks] start
 			MenuLink(r, "Task", routenames.Task),
 			// [feature:tasks] end
+			// [feature:files] start
 			MenuLink(r, "Files", routenames.Files),
+			// [feature:files] end
 		),
 		P(
 			Class("menu-label"),
