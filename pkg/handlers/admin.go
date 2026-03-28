@@ -11,7 +11,9 @@ import (
 	"entgo.io/ent/entc/load"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	// [feature:tasks] start
 	"github.com/mikestefanello/backlite/ui"
+	// [feature:tasks] end
 	"github.com/occult/pagode/ent"
 	"github.com/occult/pagode/ent/admin"
 	"github.com/occult/pagode/pkg/context"
@@ -29,7 +31,9 @@ type Admin struct {
 	orm      *ent.Client
 	graph    *gen.Graph
 	admin    *admin.Handler
+	// [feature:tasks] start
 	backlite *ui.Handler
+	// [feature:tasks] end
 	Inertia  *inertia.Inertia
 }
 
@@ -38,8 +42,6 @@ func init() {
 }
 
 func (h *Admin) Init(c *services.Container) error {
-	var err error
-
 	h.orm = c.ORM
 	h.Inertia = c.Inertia
 	h.graph = c.Graph
@@ -49,13 +51,19 @@ func (h *Admin) Init(c *services.Container) error {
 		PageQueryKey: pager.QueryKey,
 		TimeFormat:   time.DateTime,
 	})
+	// [feature:tasks] start
+	var err error
 	h.backlite, err = ui.NewHandler(ui.Config{
 		DB:           c.Database,
 		BasePath:     "/admin/tasks",
 		ItemsPerPage: 25,
 		ReleaseAfter: c.Config.Tasks.ReleaseAfter,
 	})
-	return err
+	if err != nil {
+		return err
+	}
+	// [feature:tasks] end
+	return nil
 }
 
 func (h *Admin) Routes(g *echo.Group) {
@@ -85,6 +93,7 @@ func (h *Admin) Routes(g *echo.Group) {
 			Name = routenames.AdminEntityDeleteSubmit(n.Name)
 	}
 
+	// [feature:tasks] start
 	tasks := ag.Group("/tasks")
 	tasks.GET("", h.Backlite(h.backlite.Running)).Name = routenames.AdminTasks
 	tasks.GET("/succeeded", h.Backlite(h.backlite.Succeeded))
@@ -92,6 +101,7 @@ func (h *Admin) Routes(g *echo.Group) {
 	tasks.GET("/upcoming", h.Backlite(h.backlite.Upcoming))
 	tasks.GET("/task/:id", h.Backlite(h.backlite.Task))
 	tasks.GET("/completed/:id", h.Backlite(h.backlite.TaskCompleted))
+	// [feature:tasks] end
 }
 
 func (h *Admin) Page(ctx echo.Context) error {
@@ -377,6 +387,7 @@ func (h *Admin) getEntitySchema(n *gen.Type) *load.Schema {
 	return nil
 }
 
+// [feature:tasks] start
 func (h *Admin) Backlite(handler func(http.ResponseWriter, *http.Request) error) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if id := c.Param("id"); id != "" {
@@ -385,3 +396,5 @@ func (h *Admin) Backlite(handler func(http.ResponseWriter, *http.Request) error)
 		return handler(c.Response().Writer, c.Request())
 	}
 }
+
+// [feature:tasks] end
