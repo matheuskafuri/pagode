@@ -34,7 +34,7 @@ func main() {
 }
 `)
 
-	remover := NewRemover(root, false)
+	remover := NewRemover(root)
 	patched, err := remover.PatchFeatureMarkers([]string{"tasks"})
 	if err != nil {
 		t.Fatalf("PatchFeatureMarkers() error = %v", err)

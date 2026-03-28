@@ -97,8 +97,6 @@ func tasksModule() Module {
 		Description: "Async job queue with admin monitoring UI",
 		Files: []string{
 			"pkg/handlers/task.go",
-			"pkg/tasks/example.go",
-			"pkg/tasks/register.go",
 			"pkg/ui/forms/task.go",
 			"pkg/ui/pages/task.go",
 		},

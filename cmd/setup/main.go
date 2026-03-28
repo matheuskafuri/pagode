@@ -71,8 +71,8 @@ func main() {
 	}
 	fmt.Printf("\nRemoving: %s\n", strings.Join(names, ", "))
 
-	remover := NewRemover(root, true)
-	cleanup := NewCleanup(root, true)
+	remover := NewRemover(root)
+	cleanup := NewCleanup(root)
 
 	// Collect all feature names for marker patching.
 	featureNames := featureNamesFromModules(toRemove)

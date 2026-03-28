@@ -11,13 +11,12 @@ import (
 // Cleanup handles post-removal steps: ent regen, go mod tidy, build verification, and self-removal.
 type Cleanup struct {
 	root       string
-	verbose    bool
 	runCommand func(dir, name string, args ...string) error
 }
 
 // NewCleanup creates a Cleanup rooted at the given project directory.
-func NewCleanup(root string, verbose bool) *Cleanup {
-	return &Cleanup{root: root, verbose: verbose}
+func NewCleanup(root string) *Cleanup {
+	return &Cleanup{root: root}
 }
 
 // CleanStaleEntFiles removes orphaned generated Ent artifacts for schemas that
@@ -84,9 +83,7 @@ func (c *Cleanup) CleanStaleEntFiles() error {
 			}
 		}
 
-		if c.verbose {
-			fmt.Printf("  cleaned: ent/%s\n", entry.Name())
-		}
+		fmt.Printf("  cleaned: ent/%s\n", entry.Name())
 	}
 
 	return nil
@@ -117,9 +114,7 @@ func (c *Cleanup) prepareEntForRegeneration() error {
 			return fmt.Errorf("failed to remove ent/admin/%s: %w", name, err)
 		}
 
-		if c.verbose {
-			fmt.Printf("  cleaned: ent/admin/%s\n", name)
-		}
+		fmt.Printf("  cleaned: ent/admin/%s\n", name)
 	}
 
 	return nil
@@ -159,16 +154,12 @@ func (c *Cleanup) SelfCleanup() error {
 		return fmt.Errorf("failed to remove cmd/setup: %w", err)
 	}
 
-	if c.verbose {
-		fmt.Println("  removed: cmd/setup/")
-	}
+	fmt.Println("  removed: cmd/setup/")
 
 	// Remove the huh dependency and run go mod tidy again.
 	if err := c.runCmd("go", "get", "-u", "github.com/charmbracelet/huh@none"); err != nil {
 		// Ignore error — go mod tidy will clean it up anyway.
-		if c.verbose {
-			fmt.Printf("  note: could not remove huh dependency directly: %v\n", err)
-		}
+		fmt.Printf("  note: could not remove huh dependency directly: %v\n", err)
 	}
 
 	if err := c.GoModTidy(); err != nil {
@@ -231,13 +222,11 @@ func (c *Cleanup) runCmdInDir(dir, name string, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	if c.verbose {
-		relDir, err := filepath.Rel(c.root, dir)
-		if err == nil && relDir != "." {
-			fmt.Printf("  running in %s: %s %s\n", relDir, name, strings.Join(args, " "))
-		} else {
-			fmt.Printf("  running: %s %s\n", name, strings.Join(args, " "))
-		}
+	relDir, err := filepath.Rel(c.root, dir)
+	if err == nil && relDir != "." {
+		fmt.Printf("  running in %s: %s %s\n", relDir, name, strings.Join(args, " "))
+	} else {
+		fmt.Printf("  running: %s %s\n", name, strings.Join(args, " "))
 	}
 
 	if err := cmd.Run(); err != nil {

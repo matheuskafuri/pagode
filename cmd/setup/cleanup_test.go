@@ -47,7 +47,7 @@ func TestCleanStaleEntFilesRemovesGeneratedAdminFiles(t *testing.T) {
 	mustWriteFile(t, filepath.Join(root, "ent", "paymentcustomer_update.go"), "package ent\n")
 	mustWriteFile(t, filepath.Join(root, "ent", "paymentcustomer", "where.go"), "package paymentcustomer\n")
 
-	cleanup := NewCleanup(root, false)
+	cleanup := NewCleanup(root)
 	if err := cleanup.CleanStaleEntFiles(); err != nil {
 		t.Fatalf("CleanStaleEntFiles() error = %v", err)
 	}
@@ -99,7 +99,7 @@ func TestPrepareEntForRegenerationRemovesGeneratedAdminFiles(t *testing.T) {
 	mustWriteFile(t, filepath.Join(root, "ent", "admin", "types.go"), "package admin\n")
 	mustWriteFile(t, filepath.Join(root, "ent", "admin", "templates", "handler.tmpl"), "{{ define \"x\" }}{{ end }}\n")
 
-	cleanup := NewCleanup(root, false)
+	cleanup := NewCleanup(root)
 	if err := cleanup.prepareEntForRegeneration(); err != nil {
 		t.Fatalf("prepareEntForRegeneration() error = %v", err)
 	}
@@ -120,7 +120,7 @@ func TestVerifyFrontendBuildRunsTypecheckThenViteBuild(t *testing.T) {
 		args []string
 	}
 
-	cleanup := NewCleanup(root, false)
+	cleanup := NewCleanup(root)
 	cleanup.runCommand = func(dir, name string, args ...string) error {
 		calls = append(calls, struct {
 			dir  string
